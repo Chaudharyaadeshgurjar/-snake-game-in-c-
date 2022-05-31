@@ -1,0 +1,862 @@
+#include<iostream.h>
+#include<conio.h>
+#include<graphics.h>
+#include<dos.h>
+#include<stdlib.h>
+#include<stdio.h>
+#include<time.h>
+#include<string.h>
+
+class Snake
+{
+ int p1,p2,v1,v2,v3,e1,e2,prev,now,n,colr,dsp,cnt,dly,m;
+ int stp, egGen;
+ int xr, yr;
+ void caught();
+ public:
+  long scr;
+ int strtX,strtY,endX,endY;
+ int pos[100][2];
+ void show();
+ void init();
+ void egg();
+ void transpose();
+ void gnrtCond();
+ void gnrtUnCond();
+ void check();
+ void checkEgg();
+ void move();
+ void chngDir();
+ void sndEt();
+ void sndCgt();
+ int test();
+ void score();
+ Snake();
+ Snake(Snake*);
+ ~Snake();
+ };
+Snake::Snake()
+ {
+ }
+Snake::~Snake()
+{
+}
+void Snake::checkEgg()
+{
+ if((e1 == p1) && (e2 == p2))
+ { sndEt();
+  egg();
+  dly--;
+  score();
+  n++;
+  }
+}
+void Snake::sndEt()
+{ nosound();
+ sound(2500);
+ delay(2);
+ nosound();
+}
+void Snake::sndCgt()
+{ nosound();
+ for(int x=1000;x>0;x--)
+ { sound(x);
+  delay(1);
+  }
+ nosound();
+}
+void Snake::score()
+{ char *p;
+  ltoa(scr,p,10);
+  settextstyle(8,0,1);
+  setcolor(0);
+  outtextxy(585,40,p);
+  if(egGen != 1){
+  scr = scr + dly / 10;
+  }
+  ltoa(scr,p,10);
+  setcolor(10);
+  outtextxy(585,40,p);
+}
+void Snake::gnrtCond()
+{ if(n < 367)
+ { if(now == 8 && (prev != 8 && prev != 2))
+  { pos[0][0] = p1;
+   pos[0][1] = p2 - dsp;
+   prev = now;
+   }
+  if(now == 4 && (prev != 4 && prev != 1))
+  { pos[0][0] = p1 + dsp;
+   pos[0][1] = p2;
+   prev = now;
+   }
+  if(now == 2 && (prev != 8 && prev != 2))
+  { pos[0][0] = p1;
+   pos[0][1] = p2 + dsp;
+   prev = now;
+   }
+  if(now == 1 && (prev != 1 && prev != 4))
+  {pos[0][0] = p1 - dsp;
+   pos[0][1] = p2;
+   prev = now;
+   }
+}
+}
+void Snake::gnrtUnCond()
+{
+  if( prev == 8 )
+  { pos[0][0] = p1;
+   pos[0][1] = p2 - dsp;
+   }
+ if( prev == 4 )
+  {pos[0][0] = p1 + dsp;
+   pos[0][1] = p2;
+   }
+ if( prev == 2 )
+  { pos[0][0] = p1;
+   pos[0][1] = p2 + dsp;
+   }
+ if( prev == 1 )
+  {pos[0][0] = p1 - dsp;
+   pos[0][1] = p2;
+   }
+ p1 = pos[0][0];
+ p2 = pos[0][1];
+}
+void Snake::check()
+{
+ if(p1 > endX)
+  {p1 = strtX;}
+ else if(p1 < strtX)
+  { p1 = endX;}
+ if(p2 > endY)
+  { p2 = strtY;}
+ else if(p2 < strtY)
+  { p2 = endY;}
+ pos[0][0] = p1;
+ pos[0][1] = p2;
+for(int i = 1;i < n;i++)
+  { if(p1 == pos[i][0] && p2 == pos[i][1])
+  { caught();
+   break;
+  }
+ }
+}
+void Snake::show()
+{
+  int x = getcolor();
+  if(egGen != 1)
+  {
+  setcolor(getbkcolor());
+  setfillstyle(1,getbkcolor());
+  fillellipse(v1,v2,yr,yr);
+   }
+  else
+   egGen = 0;
+  if(egGen == 2)
+   egGen--;
+  setcolor(colr);
+  setfillstyle(1,9);
+  if(now == 8 || now == 2)
+   fillellipse(pos[0][0],pos[0][1],xr,yr);
+  else if(now == 4 || now == 1)
+   fillellipse(pos[0][0],pos[0][1],yr,xr);
+  setcolor(x);
+}
+void Snake::transpose()
+{ int i,j,x,y;
+   p1 = pos[0][0];
+   p2 = pos[0][1];
+   if(!egGen){
+   v1 = pos[n-1][0];
+   v2 = pos[n-1][1];
+   }
+   else
+    egGen = 0;
+   for(i = n-1;i >= 1;i--)
+   {pos[i][0] = pos[i-1][0];
+    pos[i][1] = pos[i-1][1];
+   }
+}
+void Snake::move()
+{ int st = 0;
+  do{
+   if(!kbhit())
+   { checkEgg();
+    if(!st)
+     show();
+    else
+     st = 0;
+    delay(dly/4);
+    transpose();
+    delay(dly/4);
+    gnrtUnCond();
+    delay(dly/4);
+    check();
+   delay(dly/4);
+    }
+   else if(stp){
+   chngDir();
+   gnrtCond();
+   check();
+   show();
+   st = 1;
+   }
+   } while(stp);
+}
+void Snake::init()
+{time_t tm;
+ srand(time(&tm));
+ dsp = 20;
+ n = 5;
+ prev = 4;
+ for(int i = 4;i >= 0;i--)
+ { pos[i][0] = 201 + (n - i - 1) * dsp;
+  pos[i][1] = 301;
+  }
+  strtX = 21;
+  strtY = 21;
+  endX = 481;
+  endY = 361;
+  colr = 12;
+  now = prev;
+  dsp = 20;
+  stp = 111;
+  cnt = -1;
+  scr = 0;
+  dly = 150;
+   xr = 3;
+   yr = 9;
+  egg();
+  egGen = 1;
+  score();
+
+  setcolor(14);
+  outtextxy(514,40,"SCORE:");
+  setcolor(14);
+  settextstyle(11,0,5);
+  outtextxy(517,111,"*:CONTROLS:*");
+  outtextxy(522,129,"P :- PAUSE");
+  outtextxy(522,149,"R :- RESUME");
+  outtextxy(522,169,"E :- EXIT");
+  outtextxy(513,197,"ARROWS:-");
+  outtextxy(512,207,"    -:MOVEMENT");
+  setcolor(11);
+  settextstyle(1,0,9);
+  outtextxy(20,353,":Crazy*Snake:");
+  settextstyle(8,0,1);
+}
+void Snake::caught()
+{
+ stp = 0;
+ sndCgt();
+for(int i=0;i<=7;i++)
+ { if(i%2)
+  {
+   setcolor(12);
+   settextstyle(1,0,9);
+   outtextxy(15,175,":Game^Over:");
+   rectangle(10,170,600,300);
+   delay(900);
+   }
+  else
+  {
+   setcolor(128);
+   settextstyle(1,0,9);
+   outtextxy(15,175,":Game^Over:");
+   rectangle(10,170,600,300);
+   delay(500);
+  }
+  }
+sleep(1);
+}
+void Snake::chngDir()
+ { int clr;
+ fillsettingstype *p;
+ char x = getch();
+ if(x == 72)
+  now = 8;
+ else if(x == 77)
+  now = 4;
+ else if(x == 80)
+  now = 2;
+ else if(x == 75)
+  now = 1;
+ else if(x == 'e')
+  caught();
+ else if(x == 'p')
+ {
+  int twnkl = 1;
+  settextstyle(11,0,9);
+  while(1)
+  {if(kbhit())
+   { int c = getch();
+    if(c == 'r')
+    { clr = getcolor();
+     setcolor(0);
+     rectangle(600,320,520,350);
+     outtextxy(endX+60,endY-29,"PAUSE");
+     break;
+     }
+    }
+   else
+   { if(twnkl%2)
+    { clr = getcolor();
+     setcolor(10);
+     rectangle(600,320,520,350);
+     outtextxy(endX+60,endY-29,"PAUSE");
+     setcolor(clr);
+      delay(1000);
+     }
+    else
+    {
+     clr = getcolor();
+     setcolor(0);
+     rectangle(600,320,520,350);
+     outtextxy(endX+60,endY-29,"PAUSE");
+     delay(1000);
+    }
+   }
+   twnkl++;
+  }
+    settextstyle(8,0,1);
+ }
+}
+Snake::Snake(Snake *p)
+{
+ *p=NULL;
+}
+void Snake::egg()
+{ do
+  { e1 = (rand() % 100) * dsp + strtX;
+   e2 = (rand() % 100) * dsp + strtY;
+   } while(test());
+  int x = getcolor();
+  setcolor(7);
+  setfillstyle(1,random(15)+1);
+  fillellipse(e1,e2,xr+2,xr+2);
+  setcolor(x);
+  egGen = 2;
+}
+int Snake::test()
+{
+for(int i=0;i<n;i++)
+  { if(e1 == pos[i][0] && e2 == pos[i][1])
+    break;
+   if(v1 == e1 && v2 == e2)
+    break;
+   if((e1 >= endX+1) || (e2 >= endY+1))
+    break;
+   }
+ if(i != n)
+  return 1;
+ else
+  return 0;
+  clearviewport();
+}
+void main()
+{
+
+ int gd=DETECT,gm,i,j,k,x,y;
+ clrscr();
+ initgraph(&gd,&gm,"C:\\Turboc3\\bgi");
+ setcolor(2);
+ settextstyle(4,0,8);
+ outtextxy(100,175,"Please wait...");
+ delay(4000);
+ clearviewport();
+ rectangle(630,373,257,380);
+ outtextxy(0,300,"Loading.");
+ delay(1000);
+ outtextxy(0,300,"Loading..");
+ delay(1000);
+ outtextxy(0,300,"Loading...");
+ delay(500);
+ outtextxy(0,300,"Loading....");
+ delay(500);
+ outtextxy(0,300,"Loading.....");
+ delay(500);
+ outtextxy(0,300,"Loading......");
+ delay(400);
+ outtextxy(0,300,"Loading.......");
+ delay(400);
+ outtextxy(0,300,"Loading........");
+ delay(400);
+ outtextxy(0,300,"Loading.........");
+ delay(400);
+ outtextxy(0,300,"Loading..........");
+ delay(100);
+ outtextxy(0,300,"Loading...........");
+ delay(100);
+ outtextxy(0,300,"Loading............");
+ delay(100);
+ outtextxy(0,300,"Loading.............");
+ delay(100);
+ outtextxy(0,300,"Loading..............");
+ delay(100);
+ outtextxy(0,300,"Loading...............");
+ delay(100);
+ outtextxy(0,300,"Loading................");
+ delay(100);
+ outtextxy(0,300,"Loading.................");
+ delay(100);
+ outtextxy(0,300,"Loading..................");
+ delay(100);
+ outtextxy(0,300,"Loading...................");
+ delay(100);
+ clearviewport();
+ setcolor(2);
+ settextstyle(4,0,8);
+ outtextxy(20,45,"= = = = = = =");
+ outtextxy(27,45," - - - - - - ");
+ outtextxy(20,300,"= = = = = = =");
+ outtextxy(27,300," - - - - - -  ");
+ setcolor(6);
+ settextstyle(4,0,9);
+ outtextxy(5,60,"****************");
+ outtextxy(5,240,"****************");
+ setcolor(14);
+ settextstyle(4,0,9);
+ outtextxy(0,90,"...............................");
+ outtextxy(0,190,"...............................");
+ settextstyle(1,0,9);
+ setcolor(9);
+ outtextxy(60,165,"[*:Welcome:*]");
+ delay(3000);
+ clearviewport();
+ setcolor(2);
+ settextstyle(4,0,8);
+ outtextxy(20,45,"= = = = = = =");
+ outtextxy(27,45," - - - - - - ");
+ outtextxy(20,300,"= = = = = = =");
+ outtextxy(27,300," - - - - - -  ");
+ setcolor(6);
+ settextstyle(4,0,9);
+ outtextxy(5,60,"****************");
+ outtextxy(5,240,"****************");
+ setcolor(14);
+ settextstyle(4,0,9);
+ outtextxy(0,90,"...................................");
+ outtextxy(0,190,"...................................");
+ setcolor(10);
+ settextstyle(4,0,8);
+ outtextxy(145,175,"..In*The..");
+ delay(1000);
+ clearviewport();
+ setcolor(2);
+ settextstyle(4,0,8);
+ outtextxy(20,45,"= = = = = = =");
+ outtextxy(27,45," - - - - - - ");
+ outtextxy(20,300,"= = = = = = =");
+ outtextxy(27,300," - - - - - -  ");
+ setcolor(6);
+ settextstyle(4,0,9);
+ outtextxy(5,60,"****************");
+ outtextxy(5,240,"****************");
+ setcolor(14);
+ settextstyle(4,0,9);
+ outtextxy(0,90,"................................");
+ outtextxy(0,190,"...............................");
+ settextstyle(4,0,8);
+ setcolor(13);
+ outtextxy(140,175,"[-:Crazy:-]");
+ delay(2000);
+ clearviewport();
+ setcolor(2);
+ settextstyle(4,0,8);
+ outtextxy(20,45,"= = = = = = =");
+ outtextxy(27,45," - - - - - - ");
+ outtextxy(20,300,"= = = = = = =");
+ outtextxy(27,300," - - - - - -  ");
+ setcolor(6);
+ settextstyle(4,0,9);
+ outtextxy(5,60,"****************");
+ outtextxy(5,240,"****************");
+ setcolor(14);
+ settextstyle(4,0,9);
+ outtextxy(0,90,"......................................");
+ outtextxy(0,190,"......................................");
+ setcolor(11);
+ settextstyle(4,0,8);
+ outtextxy(50,175,"[*:snake game:*]");
+ delay(2000);
+ clearviewport();
+ setcolor(2);
+ settextstyle(4,0,8);
+ outtextxy(20,45,"= = = = = = =");
+ outtextxy(27,45," - - - - - - ");
+ outtextxy(20,300,"= = = = = = =");
+ outtextxy(27,300," - - - - - -  ");
+ setcolor(6);
+ settextstyle(4,0,9);
+ outtextxy(5,60,"****************");
+ outtextxy(5,240,"****************");
+ setcolor(14);
+ settextstyle(4,0,9);
+ outtextxy(0,90,".....................................");
+ outtextxy(0,190,".....................................");
+ setcolor(12);
+ settextstyle(4,0,8);
+ outtextxy(75,175,"doveloped by:=");
+ delay(1000);
+ clearviewport();
+ setcolor(6);
+ settextstyle(4,0,9);
+ outtextxy(5,20,"****************");
+ outtextxy(5,300,"****************");
+ setcolor(14);
+ settextstyle(4,0,9);
+ outtextxy(0,50,"...........................");
+ outtextxy(0,250,"...........................");
+ setcolor(3);
+ settextstyle(1,0,9);
+ outtextxy(0,130,"Aadesh:*");
+ outtextxy(270,230,"*:Kumar");
+ delay(3000);
+ clearviewport();
+
+
+
+ setcolor(6);
+ settextstyle(1,0,4);
+ outtextxy(0,-10,"*");
+ setcolor(6);
+ settextstyle(1,0,2);
+ outtextxy(10,-10,"= = = = = = = = = = = = = = = = = = = =");
+ outtextxy(12,-10," - - - - - - - - - - - - - - - - - - - - ");
+ settextstyle(1,1,2);
+ outtextxy(-10,0,"= = = = = = = = = = = = = = =");
+ outtextxy(-10,0," - - - - - - - - - - - - - - - ");
+ setcolor(6);
+ settextstyle(1,0,2);
+ outtextxy(10,362,"= = = = = = = = = = = = = = = = = = = =");
+ outtextxy(12,361," - - - - - - - - - - - - - - - - - - - - ");
+ settextstyle(1,0,4);
+ outtextxy(492,360,"*");
+ outtextxy(492,-11,"*");
+ outtextxy(0,360,"*");
+ settextstyle(1,1,2);
+
+ outtextxy(484,0,"= = = = = = = = = = = = = = =");
+ outtextxy(484,0," - - - - - - - - - - - - - - - ");
+
+
+ setcolor(5);
+ settextstyle(1,0,4);
+ outtextxy(0,371,"*");
+ outtextxy(0,381,"*");
+ outtextxy(0,391,"*");
+ outtextxy(0,401,"*");
+ outtextxy(0,411,"*");
+ outtextxy(0,421,"*");
+ outtextxy(0,431,"*");
+ outtextxy(0,441,"*");
+ outtextxy(10,441,"************************************************");
+
+
+   setcolor(5);
+   line(0,380,639,380);
+  rectangle(0,381,639,462);
+  rectangle(10,381,629,452);
+ setcolor(6);
+ rectangle(8,8,494,372);
+ rectangle(0,0,502,380);
+ setcolor(3);
+  rectangle(502,0,639,380);
+  rectangle(502,9,629,372);
+  rectangle(502,100,629,108);
+  line(502,120,629,120);
+  rectangle(502,0,639,9);
+  rectangle(502,372,640,380);
+  rectangle(502,290,629,298);
+  rectangle(502,220,629,228);
+  rectangle(502,183,629,191);
+  setcolor(4);
+  settextstyle(1,0,9);
+  outtextxy(502,210,"*");
+  outtextxy(598,210,"*");
+  setcolor(13);
+  outtextxy(541,193,"^");
+  outtextxy(541,203,"^");
+  outtextxy(541,213,"^");
+  outtextxy(541,223,"^");
+  outtextxy(541,233,"^");
+  setcolor(2);
+  outtextxy(531,186,":");
+  outtextxy(589,186,":");
+  setcolor(2);
+  outtextxy(505,193,".");
+  outtextxy(505,147,".");
+  outtextxy(617,193,".");
+  outtextxy(617,147,".");
+ setcolor(5);
+ settextstyle(1,0,4);
+ outtextxy(629,371,"*");
+ outtextxy(629,381,"*");
+ outtextxy(629,391,"*");
+ outtextxy(629,401,"*");
+ outtextxy(629,411,"*");
+ outtextxy(629,421,"*");
+ outtextxy(629,431,"*");
+ outtextxy(629,441,"*");
+ setcolor(3);
+ settextstyle(1,1,2);
+ outtextxy(620,0,"= = = = = = = = = = = = = = =");
+ outtextxy(620,0," - - - - - - - - - - - - - - - ");
+ settextstyle(1,0,2);
+ outtextxy(518,90,"=-=-=-=");
+ outtextxy(518,-10,"=-=-=-=");
+ outtextxy(518,362,"=-=-=-=");
+ outtextxy(518,280,"=-=-=-=");
+ outtextxy(518,210,"=-=-=-=");
+ outtextxy(518,173,"=-=-=-=");
+ rectangle(622,40,509,70);
+ settextstyle(1,0,4);
+ outtextxy(502,88,"*");
+ outtextxy(502,-11,"*");
+ outtextxy(502,360,"*");
+ outtextxy(502,278,"*");
+ outtextxy(502,208,"*");
+ outtextxy(502,171,"*");
+ outtextxy(619,88,"*");
+ outtextxy(619,-11,"*");
+ outtextxy(633,-25,".");
+ outtextxy(619,360,"*");
+ outtextxy(633,346,".");
+ outtextxy(619,278,"*");
+ outtextxy(619,208,"*");
+ outtextxy(619,171,"*");
+
+
+
+Snake snk;
+ snk.init();
+ snk.move();
+ clearviewport();
+ setcolor(2);
+ settextstyle(4,0,8);
+ outtextxy(20,45,"= = = = = = =");
+ outtextxy(27,45," - - - - - - ");
+ outtextxy(20,300,"= = = = = = =");
+ outtextxy(27,300," - - - - - -  ");
+ setcolor(6);
+ settextstyle(4,0,9);
+ outtextxy(5,60,"****************");
+ outtextxy(5,240,"****************");
+ setcolor(14);
+ settextstyle(4,0,9);
+ outtextxy(0,90,"............................");
+ outtextxy(0,190,"............................");
+ setcolor(9);
+ settextstyle(4,0,8);
+ outtextxy(200,175,"*:This:*");
+ delay(1000);
+ clearviewport();
+ setcolor(2);
+ settextstyle(4,0,8);
+ outtextxy(20,45,"= = = = = = =");
+ outtextxy(27,45," - - - - - - ");
+ outtextxy(20,300,"= = = = = = =");
+ outtextxy(27,300," - - - - - -  ");
+ setcolor(6);
+ settextstyle(4,0,9);
+ outtextxy(5,60,"****************");
+ outtextxy(5,240,"****************");
+ setcolor(14);
+ settextstyle(4,0,9);
+ outtextxy(0,90,".............................");
+ outtextxy(0,190,".............................");
+ setcolor(10);
+ settextstyle(4,0,8);
+ outtextxy(160,175,"*:Project:*");
+ delay(1000);
+ clearviewport();
+  setcolor(2);
+ settextstyle(4,0,8);
+ outtextxy(20,45,"= = = = = = =");
+ outtextxy(27,45," - - - - - - ");
+ outtextxy(20,300,"= = = = = = =");
+ outtextxy(27,300," - - - - - -  ");
+ setcolor(6);
+ settextstyle(4,0,9);
+ outtextxy(5,60,"****************");
+ outtextxy(5,240,"****************");
+ setcolor(14);
+ settextstyle(4,0,9);
+ outtextxy(0,90,"..............................");
+ outtextxy(0,190,"..............................");
+ setcolor(11);
+ settextstyle(4,0,8);
+ outtextxy(225,175,"*:Is:*");
+ delay(1000);
+ clearviewport();
+ setcolor(2);
+ settextstyle(4,0,8);
+ outtextxy(20,45,"= = = = = = =");
+ outtextxy(27,45," - - - - - - ");
+ outtextxy(20,300,"= = = = = = =");
+ outtextxy(27,300," - - - - - -  ");
+ setcolor(6);
+ settextstyle(4,0,9);
+ outtextxy(5,60,"****************");
+ outtextxy(5,240,"****************");
+ setcolor(14);
+ settextstyle(4,0,9);
+ outtextxy(0,90,"...............................");
+ outtextxy(0,190,"...............................");
+ setcolor(12);
+ settextstyle(4,0,8);
+  outtextxy(105,175,"*:doveloped:*");
+ delay(1000);
+ clearviewport();
+ setcolor(2);
+ settextstyle(4,0,8);
+ outtextxy(20,45,"= = = = = = =");
+ outtextxy(27,45," - - - - - - ");
+ outtextxy(20,300,"= = = = = = =");
+ outtextxy(27,300," - - - - - -  ");
+ setcolor(6);
+ settextstyle(4,0,9);
+ outtextxy(5,60,"****************");
+ outtextxy(5,240,"****************");
+ setcolor(14);
+ settextstyle(4,0,9);
+ outtextxy(0,90,"................................");
+ outtextxy(0,190,"................................");
+ setcolor(13);
+ settextstyle(4,0,8);
+ outtextxy(220,175,"*:By:*");
+ delay(1000);
+ clearviewport();
+ setcolor(6);
+ settextstyle(4,0,9);
+ outtextxy(5,20,"****************");
+ outtextxy(5,300,"****************");
+ setcolor(14);
+ settextstyle(4,0,9);
+ outtextxy(0,50,"............................");
+ outtextxy(0,250,"............................");
+ setcolor(3);
+ settextstyle(1,0,9);
+ outtextxy(0,130,"Aadesh:*");
+ outtextxy(270,230,"*:Kumar");
+ delay(3000);
+ clearviewport();
+
+ setcolor(2);
+ settextstyle(4,0,8);
+ outtextxy(20,45,"= = = = = = =");
+ outtextxy(27,45," - - - - - - ");
+ outtextxy(20,300,"= = = = = = =");
+ outtextxy(27,300," - - - - - -  ");
+ setcolor(6);
+ settextstyle(4,0,9);
+ outtextxy(5,60,"****************");
+ outtextxy(5,240,"****************");
+ setcolor(14);
+ settextstyle(4,0,9);
+ outtextxy(0,90,"...........................");
+ outtextxy(0,190,"...........................");
+ setcolor(9);
+ settextstyle(4,0,8);
+ outtextxy(70,175,"[*:Thank^You:*]");
+ delay(1000);
+ clearviewport();
+ setcolor(2);
+ settextstyle(4,0,8);
+ outtextxy(20,45,"= = = = = = =");
+ outtextxy(27,45," - - - - - - ");
+ outtextxy(20,300,"= = = = = = =");
+ outtextxy(27,300," - - - - - -  ");
+ setcolor(6);
+ settextstyle(4,0,9);
+ outtextxy(5,60,"****************");
+ outtextxy(5,240,"****************");
+ setcolor(14);
+ settextstyle(4,0,9);
+ outtextxy(0,90,"............................");
+ outtextxy(0,190,"............................");
+ setcolor(10);
+ settextstyle(4,0,8);
+ outtextxy(215,175,"*:For:*");
+ delay(1000);
+ clearviewport();
+ setcolor(2);
+ settextstyle(4,0,8);
+ outtextxy(20,45,"= = = = = = =");
+ outtextxy(27,45," - - - - - - ");
+ outtextxy(20,300,"= = = = = = =");
+ outtextxy(27,300," - - - - - -  ");
+ setcolor(6);
+ settextstyle(4,0,9);
+ outtextxy(5,60,"****************");
+ outtextxy(5,240,"****************");
+ setcolor(14);
+ settextstyle(4,0,9);
+ outtextxy(0,90,"..............................");
+ outtextxy(0,190,"..............................");
+ setcolor(11);
+ settextstyle(4,0,8);
+ outtextxy(155,175,"*:Playing:*");
+ delay(1000);
+ clearviewport();
+ setcolor(2);
+ settextstyle(4,0,8);
+ outtextxy(20,45,"= = = = = = =");
+ outtextxy(27,45," - - - - - - ");
+ outtextxy(20,300,"= = = = = = =");
+ outtextxy(27,300," - - - - - -  ");
+ setcolor(6);
+ settextstyle(4,0,9);
+ outtextxy(5,60,"****************");
+ outtextxy(5,240,"****************");
+ setcolor(14);
+ settextstyle(4,0,9);
+ outtextxy(0,90,".................................");
+ outtextxy(0,190,"................................");
+ setcolor(11);
+ settextstyle(4,0,8);
+ outtextxy(205,175,"*:The:*");
+ delay(1000);
+ clearviewport();
+setcolor(2);
+ settextstyle(4,0,8);
+ outtextxy(20,45,"= = = = = = =");
+ outtextxy(27,45," - - - - - - ");
+ outtextxy(20,300,"= = = = = = =");
+ outtextxy(27,300," - - - - - -  ");
+ setcolor(6);
+ settextstyle(4,0,9);
+ outtextxy(5,60,"****************");
+ outtextxy(5,240,"****************");
+ setcolor(14);
+ settextstyle(4,0,9);
+ outtextxy(0,90,"................................");
+ outtextxy(0,190,"...............................");
+ settextstyle(4,0,8);
+ setcolor(13);
+ outtextxy(140,175,"[-:Crazy:-]");
+ delay(1000);
+ clearviewport();
+ setcolor(2);
+ settextstyle(4,0,8);
+ outtextxy(20,45,"= = = = = = =");
+ outtextxy(27,45," - - - - - - ");
+ outtextxy(20,300,"= = = = = = =");
+ outtextxy(27,300," - - - - - -  ");
+ setcolor(6);
+ settextstyle(4,0,9);
+ outtextxy(5,60,"****************");
+ outtextxy(5,240,"****************");
+ setcolor(14);
+ settextstyle(4,0,9);
+ outtextxy(0,90,"................................");
+ outtextxy(0,190,"...............................");
+ setcolor(12);
+ settextstyle(4,0,8);
+ outtextxy(60,175,"[*:snake game:*]");
+ delay(2000);
+ clearviewport();
+ closegraph();
+ restorecrtmode();
+ }
